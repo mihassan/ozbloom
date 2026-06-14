@@ -6,12 +6,14 @@ import { FlowerCard } from './FlowerCard'
 interface Props {
   flower: Flower
   onAdvance: () => void
+  isFavorite: boolean
+  onToggleFavorite: () => void
 }
 
 const SWIPE_THRESHOLD = 80
 const EXIT_X = 500
 
-export function CardStack({ flower, onAdvance }: Props) {
+export function CardStack({ flower, onAdvance, isFavorite, onToggleFavorite }: Props) {
   const [exiting, setExiting] = useState(false)
   const prefersReducedMotion = useReducedMotion()
   const x = useMotionValue(0)
@@ -62,7 +64,7 @@ export function CardStack({ flower, onAdvance }: Props) {
           animate={{ opacity: 1 }}
           transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
         >
-          <FlowerCard flower={flower} />
+          <FlowerCard flower={flower} isFavorite={isFavorite} onToggleFavorite={onToggleFavorite} />
         </motion.div>
       </div>
 
