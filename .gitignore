@@ -15,6 +15,7 @@ opencode.jsonc
 # OpenCode local runtime/config
 .opencode/
 .omo/
+AGENTS.md
 
 # Stitch local design exports and project metadata
 .stitch/

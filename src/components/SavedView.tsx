@@ -35,7 +35,7 @@ export function SavedView({ flowers, isFavorite, onToggleFavorite, onClose }: Pr
       ) : (
         <div className="flex-1 overflow-y-auto space-y-4 pb-4">
           {flowers.map((flower) => (
-            <div key={flower.id} className="h-96 rounded-card overflow-hidden">
+            <div key={flower.id} className="h-[60vh] rounded-card overflow-hidden">
               <FlowerCard
                 flower={flower}
                 isFavorite={isFavorite(flower.id)}

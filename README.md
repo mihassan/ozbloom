@@ -1,31 +1,69 @@
 # OzBloom
 
-OzBloom is a mobile-first digital field guide for discovering Australian native flowers. The MVP centers on a swipeable flower card stack, a flower detail view, and a completed-deck restart state.
+**Status: [Portfolio]**
 
-## Project Status
+**Live:** [ozbloom.mihassan.com](https://ozbloom.mihassan.com)
 
-This repository currently contains product, architecture, UI/UX, implementation, and Stitch design-planning artifacts. Application source code has not been scaffolded yet.
+A mobile-first digital field guide for discovering Australian native flowers. Swipe through beautifully illustrated cards, save your favourites, and share discoveries.
 
-## Key Documents
+## Features
 
-- [Product Requirements](docs/prd.md)
-- [Architecture Plan](docs/architecture-plan.md)
-- [UI/UX Brief](docs/ui-ux-brief.md)
-- [Implementation Plan](.omo/plans/ozbloom-implementation-plan.md)
-- [Stitch Design System](.stitch/DESIGN.md)
+- **Swipeable card stack** — browse randomly presented Australian native flowers
+- **30 native species** — Golden Wattle, Waratah, Sturt's Desert Pea, Kangaroo Paw, and more
+- **Favorites** — heart button to save flowers, view them all in the saved list
+- **Share** — share flower details via Web Share API or clipboard
+- **PWA** — installable on mobile, works offline (cached assets)
+- **Watercolor illustrations** — AI-generated botanical art for each species
+- **Responsive** — mobile-first design with reduced-motion support
 
-## Planned Stack
+## Stack
 
-- Vite + React + TypeScript
-- Tailwind CSS
-- Framer Motion
-- Cloudflare Workers
-- Cloudflare D1
-- Cloudflare R2
-- Cloudflare AI for pre-launch generated watercolor flower imagery
+| Layer | Technology |
+|---|---|
+| Frontend | Vite + React + TypeScript + Tailwind CSS + Framer Motion |
+| Backend | Cloudflare Workers |
+| Database | Cloudflare D1 (flower data) |
+| Storage | Cloudflare R2 (flower images) |
+| Image generation | Cloudflare AI (Stable Diffusion XL) |
+| Testing | Vitest (unit) + Playwright (e2e) |
 
-## Repository Notes
+## Getting Started
 
-- `.omo/plans/` is kept as project planning documentation.
-- `.stitch/` contains the local Stitch design system and generated design references.
-- Local OpenCode config, runtime state, API keys, and environment files should not be committed.
+```sh
+npm install
+npm run dev        # Vite dev server → localhost:5173
+npx wrangler dev   # Worker dev server → localhost:8787
+```
+
+The Worker serves the API at `/api/flowers/random?limit=N`. The Vite dev server proxies API requests to the Worker.
+
+## Project Structure
+
+```
+src/
+├── api/            # Worker API handlers
+├── components/     # FlowerCard, CardStack, SavedView
+├── hooks/          # useFlowers, useFavorites
+├── types/          # TypeScript interfaces
+├── App.tsx         # Main app shell
+├── main.tsx        # Entry point (includes PWA SW registration)
+└── worker.ts       # Cloudflare Worker entry
+```
+
+## Tests
+
+```sh
+npm test            # Vitest unit tests (28 tests)
+npx playwright test # Playwright e2e tests (12 tests)
+```
+
+## Deployment
+
+```sh
+npm run build
+npx wrangler deploy
+```
+
+## License
+
+MIT

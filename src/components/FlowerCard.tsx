@@ -48,7 +48,7 @@ function IconButton({ onClick, ariaLabel, children }: { onClick: () => void; ari
 
 async function shareFlower(flower: Flower) {
   const text = `${flower.common_name} (${flower.scientific_name}) — ${flower.short_description}`
-  const url = 'https://ozbloom.mihassan.workers.dev'
+  const url = window.location.origin
   if (navigator.share) {
     await navigator.share({ title: flower.common_name, text, url })
   } else {
