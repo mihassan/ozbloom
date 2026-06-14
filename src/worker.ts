@@ -1,16 +1,55 @@
-// Minimal Worker stub — real API routes added in Phase 3
+export interface Env {
+  DB: D1Database
+}
+
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+}
+
+function json(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'public, max-age=60',
+      ...CORS_HEADERS,
+    },
+  })
+}
+
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
 
-    if (url.pathname.startsWith('/api/')) {
-      return new Response(JSON.stringify({ error: 'Not implemented yet' }), {
-        status: 501,
-        headers: { 'Content-Type': 'application/json' },
-      })
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: CORS_HEADERS })
     }
 
-    // Static assets served by Cloudflare via [assets] binding in wrangler.toml
+    if (url.pathname === '/api/flowers/random') {
+      const limitParam = url.searchParams.get('limit')
+      const limit = Math.min(Math.max(parseInt(limitParam ?? '8', 10) || 8, 1), 50)
+
+      const { results } = await env.DB.prepare(
+        `SELECT id, common_name, scientific_name, region, bloom_season,
+                color, habitat, conservation_status, short_description,
+                description, image_url, image_alt
+         FROM flowers
+         ORDER BY RANDOM()
+         LIMIT ?`,
+      )
+        .bind(limit)
+        .all()
+
+      return json({ flowers: results })
+    }
+
+    if (url.pathname.startsWith('/api/')) {
+      return json({ error: 'Not found' }, 404)
+    }
+
+    // Static assets served by Cloudflare via [assets] binding
     return new Response('Not found', { status: 404 })
   },
 }
