@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/components/CardStack.tsx","./src/components/FlowerCard.tsx","./src/components/SavedView.tsx","./src/hooks/useFavorites.ts","./src/hooks/useFlowers.ts","./src/types/flower.ts"],"version":"5.9.3"}
+{"root":["./src/App.tsx","./src/main.tsx","./src/components/CardStack.tsx","./src/components/FlowerCard.tsx","./src/components/SavedView.tsx","./src/hooks/useFavorites.ts","./src/hooks/useFlowers.ts","./src/types/flower.ts"],"version":"5.8.3"}
