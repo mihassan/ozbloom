@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -36,20 +38,19 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Seed local D1 database
+        if: env.CLOUDFLARE_API_TOKEN != ''
         run: npm run db:seed:local
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Start Worker dev server
+        if: env.CLOUDFLARE_API_TOKEN != ''
         run: npx wrangler dev &
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Wait for Worker to be ready
+        if: env.CLOUDFLARE_API_TOKEN != ''
         run: sleep 5
 
       - name: Run e2e tests
+        if: env.CLOUDFLARE_API_TOKEN != ''
         run: npm run test:e2e
         env:
           CI: true
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

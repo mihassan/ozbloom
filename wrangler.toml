@@ -12,11 +12,11 @@ database_id = "273c4c7e-c370-44ad-adb1-618715cec239"
 binding = "IMAGES"
 bucket_name = "ozbloom-images"
 
+routes = [
+  { pattern = "ozbloom.mihassan.com", custom_domain = true },
+]
+
 [assets]
 directory = "./dist"
 not_found_handling = "single-page-application"
 run_worker_first = ["/api/*"]
-
-routes = [
-  { pattern = "ozbloom.mihassan.com", custom_domain = true },
-]
