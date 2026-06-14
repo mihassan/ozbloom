@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import { motion, useMotionValue, useTransform, animate, useReducedMotion } from 'framer-motion'
 import type { Flower } from '../types/flower'
 import { FlowerCard } from './FlowerCard'
 
@@ -13,20 +13,27 @@ const EXIT_X = 500
 
 export function CardStack({ flower, onAdvance }: Props) {
   const [exiting, setExiting] = useState(false)
+  const prefersReducedMotion = useReducedMotion()
   const x = useMotionValue(0)
-  const rotate = useTransform(x, [-200, 200], [-18, 18])
+  const rotate = useTransform(x, [-200, 200], prefersReducedMotion ? [0, 0] : [-18, 18])
   const opacity = useTransform(x, [-EXIT_X / 2, 0, EXIT_X / 2], [0, 1, 0])
 
   const dismiss = useCallback(
     async (direction: 1 | -1) => {
       if (exiting) return
       setExiting(true)
-      await animate(x, direction * EXIT_X, { duration: 0.3, ease: 'easeOut' })
-      x.set(0)
-      setExiting(false)
-      onAdvance()
+      if (prefersReducedMotion) {
+        x.set(0)
+        setExiting(false)
+        onAdvance()
+      } else {
+        await animate(x, direction * EXIT_X, { duration: 0.3, ease: 'easeOut' })
+        x.set(0)
+        setExiting(false)
+        onAdvance()
+      }
     },
-    [exiting, x, onAdvance],
+    [exiting, x, onAdvance, prefersReducedMotion],
   )
 
   const handleDragEnd = useCallback(
@@ -49,11 +56,11 @@ export function CardStack({ flower, onAdvance }: Props) {
           style={{ x, rotate, opacity }}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.15}
+          dragElastic={prefersReducedMotion ? 0 : 0.15}
           onDragEnd={handleDragEnd}
-          initial={{ scale: 0.96, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
         >
           <FlowerCard flower={flower} />
         </motion.div>
