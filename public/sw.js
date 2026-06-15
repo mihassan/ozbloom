@@ -1,6 +1,5 @@
-const CACHE = 'ozbloom-v1'
+const CACHE = 'ozbloom-v2'
 const STATIC = [
-  '/',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -38,7 +37,11 @@ self.addEventListener('fetch', (e) => {
     caches.match(e.request).then((cached) =>
       cached ?? fetch(e.request).then((res) => {
         if (res.ok && e.request.method === 'GET') {
-          caches.open(CACHE).then((c) => c.put(e.request, res.clone()))
+          const ct = res.headers.get('content-type') || ''
+          if (!ct.includes('text/html')) {
+            const cloned = res.clone()
+            caches.open(CACHE).then((c) => c.put(e.request, cloned))
+          }
         }
         return res
       })

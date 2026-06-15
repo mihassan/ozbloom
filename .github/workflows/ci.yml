@@ -34,6 +34,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Check asset integrity
+        run: node scripts/check-assets.mjs
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
@@ -80,5 +83,39 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Check asset integrity
+        run: node scripts/check-assets.mjs
+
       - name: Deploy to Cloudflare Workers
         run: npx wrangler deploy
+
+      - name: Smoke test production
+        run: |
+          BASE="https://ozbloom.mihassan.workers.dev"
+          echo "Smoke testing $BASE"
+          for i in $(seq 1 15); do
+            if curl -sf "$BASE/api/health" > /dev/null 2>&1; then
+              echo "Health check passed"
+              break
+            fi
+            echo "Waiting for deploy to propagate... ($i/15)"
+            sleep 2
+          done
+          echo "=== Health check ==="
+          curl -sf "$BASE/api/health" | grep -q '"ok"' || { echo "FAIL: health endpoint"; exit 1; }
+          echo "PASS"
+          echo "=== Flowers endpoint ==="
+          FLOWERS=$(curl -sf "$BASE/api/flowers/random?limit=1")
+          echo "$FLOWERS" | grep -q '"flowers"' || { echo "FAIL: flowers endpoint missing flowers key"; exit 1; }
+          echo "$FLOWERS" | grep -q '"common_name"' || { echo "FAIL: flower missing common_name"; exit 1; }
+          echo "$FLOWERS" | grep -q '"id"' || { echo "FAIL: flower missing id"; exit 1; }
+          echo "PASS"
+          echo "=== Static assets ==="
+          curl -sf -o /dev/null -w "HTTP %{http_code}\n" "$BASE/" || { echo "FAIL: static assets"; exit 1; }
+          echo "PASS"
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Production e2e
+        run: npm run test:e2e:prod
