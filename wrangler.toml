@@ -3,6 +3,8 @@ main = "src/worker.ts"
 compatibility_date = "2026-06-14"
 account_id = "3bea2e6d6f93b5cc822b36b69958d4cd"
 
+workers_dev = true
+
 routes = [
   { pattern = "ozbloom.mihassan.com", custom_domain = true },
 ]
