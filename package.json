@@ -16,7 +16,7 @@
     "worker:deploy": "wrangler deploy --dry-run",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --grep-invert 'Production smoke'",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:prod": "playwright test tests/e2e/prod.spec.ts",
     "db:seed:local": "wrangler d1 execute ozbloom-db --local --file db/schema.sql && npx tsx scripts/seed-local.ts",
