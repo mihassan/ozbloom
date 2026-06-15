@@ -29,7 +29,7 @@ describe('FlowerCard', () => {
       <FlowerCard flower={flower} isFavorite={false} onToggleFavorite={vi.fn()} />,
     )
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Golden Wattle' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Golden Wattle' })).toBeInTheDocument()
     expect(screen.getByText('Acacia pycnantha')).toBeInTheDocument()
     expect(screen.getByText('A golden beauty of the Australian bush.')).toBeInTheDocument()
   })

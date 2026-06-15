@@ -53,15 +53,15 @@ src/
 ## Tests
 
 ```sh
-npm test            # Vitest unit tests (28 tests)
-npx playwright test # Playwright e2e tests (12 tests)
+npm test            # Vitest unit tests (35 tests)
+npx playwright test # Playwright e2e tests
 ```
 
 ## Deployment
 
 ```sh
 npm run build
-npx wrangler deploy
+npm run worker:deploy  # dry-run only — real deploys via CI on main
 ```
 
 ## License
