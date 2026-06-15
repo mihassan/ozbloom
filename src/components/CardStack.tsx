@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { motion, useMotionValue, useTransform, animate, useReducedMotion } from 'framer-motion'
 import type { Flower } from '../types/flower'
 import { FlowerCard } from './FlowerCard'
@@ -48,6 +48,14 @@ export function CardStack({ flower, onAdvance, isFavorite, onToggleFavorite }: P
     },
     [dismiss, x],
   )
+
+  // Focus card heading on advance
+  useEffect(() => {
+    const heading = document.querySelector('.rounded-card h2')
+    if (heading instanceof HTMLElement) {
+      heading.focus({ preventScroll: true })
+    }
+  }, [flower.id])
 
   return (
     <div className="flex flex-col items-center gap-5 w-full h-full">

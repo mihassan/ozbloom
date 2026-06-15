@@ -109,7 +109,7 @@ export function FlowerCard({ flower, isFavorite, onToggleFavorite }: Props) {
 
       <div className="flex flex-col flex-1 overflow-y-auto px-5 pt-4 pb-6 gap-3">
         <div>
-          <h2 className="text-forest text-2xl font-semibold leading-tight tracking-tight">
+          <h2 tabIndex={-1} className="text-forest text-2xl font-semibold leading-tight tracking-tight outline-none">
             {flower.common_name}
           </h2>
           <p className="text-muted text-sm italic mt-0.5">{flower.scientific_name}</p>

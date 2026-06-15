@@ -24,13 +24,18 @@ The product should feel calm, visual, and lightweight. Flower imagery is the pri
 
 The MVP is a single-screen design: a card stack showing one flower at a time. Cards appear in random order on each visit. Each card displays the flower image, name, scientific name, region, and key facts. Tapping "Next" or swiping advances to the next random flower. There is no separate detail view or completed-stack state — every interaction happens on the same screen.
 
-The MVP uses Cloudflare D1 for a seeded dataset of 8 curated Australian flowers and Cloudflare R2 for generated flower images. It does not require accounts, user-generated content, maps, search, filtering, favorites, analytics, or camera-based identification.
+The MVP uses Cloudflare D1 for a seeded dataset of 30 curated Australian flowers and Cloudflare R2 for generated flower images. It does not require accounts, user-generated content, maps, search, filtering, analytics, or camera-based identification.
+
+## Features Added Post-MVP
+
+- **Favorites** — heart button to save flowers to a local collection (persisted in localStorage).
+- **Saved view** — browse all favorited flowers, remove them from saved.
+- **Share** — share flower details via Web Share API or clipboard fallback.
+- **PWA** — installable on mobile, works offline with cached assets.
 
 ## Non-goals
 
 - User login, profiles, or cloud sync.
-- Favorites, saved collections, comments, ratings, or likes.
-- Social sharing.
 - Camera-based flower identification.
 - GPS tracking, location recommendations, or map-based discovery.
 - Search, filters, or advanced sorting.
@@ -85,16 +90,7 @@ Card text must remain readable over or beside imagery on common mobile screen si
 
 ## Data and Image Requirements
 
-The MVP dataset must include exactly 8 flowers:
-
-- Golden Wattle.
-- Sturt's Desert Pea.
-- Waratah.
-- Kangaroo Paw.
-- Flannel Flower.
-- Royal Bluebell.
-- Pink Mulla Mulla.
-- Banksia.
+The MVP dataset includes 30 Australian native flowers seeded via `scripts/seed-local.ts`.
 
 Each flower record must include:
 
@@ -138,9 +134,8 @@ Flower records must be seeded into Cloudflare D1 before launch. Flower images mu
 - On launch, a random flower card appears without requiring onboarding or menu navigation.
 - Given the card stack is visible, when the user swipes left/right or taps "Next", another random flower card appears.
 - The card itself displays all flower data (image, name, scientific name, region, season, color, habitat, conservation status, description). No separate detail view is needed.
-- Flowers are randomized on each visit. The same 8 flowers cycle with no terminal completed state.
-- Consecutive duplicates are avoided where possible.
-- All 8 flowers have complete data for every required field.
+- Flowers are randomized on each visit. The same 30 flowers cycle with prefetch batching to avoid consecutive duplicates.
+- All 30 flowers have complete data for every required field.
 - All flower images render from public Cloudflare R2 URLs and expose accessible alt text.
 - The interface remains usable on common mobile viewport widths.
 
@@ -152,7 +147,6 @@ Flower records must be seeded into Cloudflare D1 before launch. Flower images mu
 
 ## Deferred Decisions
 
-- Whether future versions should add favorites or saved collections.
 - Whether future versions should add search, filters, or maps.
 - Whether future versions should distinguish left and right swipe meanings.
 - Whether future versions should add a content management system.

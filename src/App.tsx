@@ -6,7 +6,7 @@ import { SavedView } from './components/SavedView'
 
 function LoadingState() {
   return (
-    <div className="w-full h-full bg-sand rounded-card shadow-card-lg animate-pulse" />
+    <div className="w-full h-full bg-sand rounded-card shadow-card-lg motion-reduce:animate-none animate-pulse" />
   )
 }
 
