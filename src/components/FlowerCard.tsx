@@ -82,6 +82,7 @@ export function FlowerCard({ flower, isFavorite, onToggleFavorite }: Props) {
             src={flower.image_url}
             alt={flower.image_alt}
             className="w-full h-full object-cover"
+            loading="lazy"
             onError={() => setImageFailed(true)}
           />
         )}

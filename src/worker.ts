@@ -30,7 +30,16 @@ export default {
 
     if (url.pathname === '/api/flowers/random') {
       const limitParam = url.searchParams.get('limit')
-      const limit = Math.min(Math.max(parseInt(limitParam ?? '8', 10) || 8, 1), 50)
+      let limit: number
+      if (limitParam === null) {
+        limit = 8
+      } else {
+        limit = parseInt(limitParam, 10)
+        if (isNaN(limit) || limit < 1) {
+          return json({ error: 'Invalid limit parameter' }, 400)
+        }
+      }
+      limit = Math.min(limit, 50)
 
       if (!env.DB) return json({ error: 'Database unavailable' }, 503)
 
@@ -62,7 +71,6 @@ export default {
       return json({ error: 'Not found' }, 404)
     }
 
-    // Static assets served by Cloudflare via [assets] binding
     return new Response('Not found', { status: 404 })
   },
 }

@@ -4,6 +4,7 @@ import type { Flower } from '../types/flower'
 const BATCH_SIZE = 8
 const PREFETCH_THRESHOLD = 2
 const DEDUP_WINDOW = 16
+const TRIM_THRESHOLD = 8
 const FETCH_TIMEOUT = 10_000
 
 async function fetchBatch(signal?: AbortSignal): Promise<Flower[]> {
@@ -24,6 +25,7 @@ export interface UseFlowersResult {
   loading: boolean
   error: string | null
   advance: () => void
+  refetch: () => void
 }
 
 export function useFlowers(): UseFlowersResult {
@@ -50,7 +52,10 @@ export function useFlowers(): UseFlowersResult {
   }, [])
 
   const trackSeen = useCallback((id: string) => {
-    seenWindow.current = [...seenWindow.current, id].slice(-DEDUP_WINDOW)
+    seenWindow.current.push(id)
+    if (seenWindow.current.length > DEDUP_WINDOW) {
+      seenWindow.current.shift()
+    }
   }, [])
 
   const loadInitial = useCallback(async () => {
@@ -58,6 +63,7 @@ export function useFlowers(): UseFlowersResult {
     setError(null)
     try {
       const batch = await fetchBatchWithTimeout()
+      seenWindow.current = batch.map((f) => f.id)
       setQueue(batch)
       setIndex(0)
     } catch (e) {
@@ -73,6 +79,14 @@ export function useFlowers(): UseFlowersResult {
   useEffect(() => {
     loadInitial()
   }, [loadInitial])
+
+  // Trim consumed cards to prevent unbounded memory growth
+  useEffect(() => {
+    if (index >= TRIM_THRESHOLD) {
+      setQueue((prev) => prev.slice(TRIM_THRESHOLD))
+      setIndex((prev) => prev - TRIM_THRESHOLD)
+    }
+  }, [index])
 
   const prefetchIfNeeded = useCallback(async (currentQueue: Flower[], currentIndex: number) => {
     const remaining = currentQueue.length - currentIndex
@@ -105,5 +119,5 @@ export function useFlowers(): UseFlowersResult {
 
   const current = queue[index] ?? null
 
-  return { current, loading, error, advance }
+  return { current, loading, error, advance, refetch: loadInitial }
 }

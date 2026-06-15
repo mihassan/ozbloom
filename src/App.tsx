@@ -25,7 +25,7 @@ function ErrorState({ message, onRetry }: { message: string; onRetry: () => void
 }
 
 export default function App() {
-  const { current, loading, error, advance } = useFlowers()
+  const { current, loading, error, advance, refetch } = useFlowers()
   const { favorites, isFavorite, toggle } = useFavorites()
   const [showSaved, setShowSaved] = useState(false)
 
@@ -62,7 +62,7 @@ export default function App() {
             <>
               {loading && <LoadingState />}
               {!loading && error && (
-                <ErrorState message={error} onRetry={() => window.location.reload()} />
+                <ErrorState message={error} onRetry={refetch} />
               )}
               {!loading && !error && current && (
                 <CardStack
@@ -73,7 +73,7 @@ export default function App() {
                 />
               )}
               {!loading && !error && !current && (
-                <ErrorState message="No more flowers to show" onRetry={() => window.location.reload()} />
+                <ErrorState message="No more flowers to show" onRetry={refetch} />
               )}
             </>
           )}
