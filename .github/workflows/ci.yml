@@ -28,6 +28,9 @@ jobs:
       - name: Run linter
         run: npm run lint
 
+      - name: Check E2E selectors
+        run: node scripts/check-e2e-selectors.mjs
+
       - name: Run unit tests
         run: npm test
 

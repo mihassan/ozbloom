@@ -3,7 +3,11 @@ export interface Env {
   IMAGES: R2Bucket
 }
 
-const ALLOWED_ORIGINS = ['https://ozbloom.mihassan.com', 'https://ozbloom.mihassan.workers.dev']
+const ALLOWED_ORIGINS = [
+  'https://ozbloom.mihassan.com',
+  'https://ozbloom.mihassan.workers.dev',
+  'http://localhost:5173',
+]
 
 function corsHeaders(origin: string | null): Record<string, string> {
   const allowOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]

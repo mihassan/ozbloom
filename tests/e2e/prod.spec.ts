@@ -10,7 +10,7 @@ test.describe('Production smoke', () => {
     })
 
     await page.goto(PROD_URL)
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('.rounded-card h2')).toBeVisible({ timeout: 15000 })
     await page.waitForTimeout(1000)
 
     expect(errors).toHaveLength(0)
@@ -18,7 +18,7 @@ test.describe('Production smoke', () => {
 
   test('service worker is registered', async ({ page }) => {
     await page.goto(PROD_URL)
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('.rounded-card h2')).toBeVisible({ timeout: 15000 })
 
     const hasSw = await page.evaluate(() => 'serviceWorker' in navigator)
     expect(hasSw).toBe(true)
@@ -32,9 +32,9 @@ test.describe('Production smoke', () => {
 
   test('fetches and displays a flower', async ({ page }) => {
     await page.goto(PROD_URL)
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15000 })
+    await expect(page.locator('.rounded-card h2')).toBeVisible({ timeout: 15000 })
 
-    const heading = page.locator('h1')
+    const heading = page.locator('.rounded-card h2')
     await expect(heading).not.toBeEmpty()
 
     const text = await heading.innerText()
