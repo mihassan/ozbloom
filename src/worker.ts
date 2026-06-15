@@ -45,6 +45,10 @@ export default {
       return json({ flowers: results })
     }
 
+    if (url.pathname === '/api/health') {
+      return json({ status: 'ok' })
+    }
+
     if (url.pathname.startsWith('/api/')) {
       return json({ error: 'Not found' }, 404)
     }

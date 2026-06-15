@@ -1,13 +1,39 @@
 #!/usr/bin/env npx tsx
 /**
- * Local seed script — inserts flower records into local D1 with placeholder image URLs.
- * Images point to the real R2 public bucket (already seeded remotely).
+ * OzBloom local seed script
+ *
+ * Seeds the local D1 database with flower records via wrangler CLI.
  * Run after: wrangler d1 execute ozbloom-db --local --file db/schema.sql
+ *
+ * Usage:
+ *   npx tsx scripts/seed-local.ts
+ *
+ * No CLOUDFLARE_API_TOKEN needed — uses wrangler d1 execute --local under the hood.
  */
+
+import { execSync } from 'node:child_process'
+import { writeFileSync, unlinkSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 const R2_PUBLIC_BASE = 'https://pub-aaab41c4e97c434f88a59e64879dd6c7.r2.dev'
 
-const flowers = [
+interface FlowerSeed {
+  id: string
+  common_name: string
+  scientific_name: string
+  region: string
+  bloom_season: string
+  color: string
+  habitat: string
+  conservation_status: string
+  short_description: string
+  description: string
+  image_url: string
+  image_alt: string
+}
+
+const flowers: FlowerSeed[] = [
   {
     id: 'golden-wattle',
     common_name: 'Golden Wattle',
@@ -122,40 +148,37 @@ const flowers = [
   },
 ]
 
-const DB_ID = '273c4c7e-c370-44ad-adb1-618715cec239'
-const ACCOUNT_ID = '3bea2e6d6f93b5cc822b36b69958d4cd'
-const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN
-
-if (!API_TOKEN) {
-  console.error('CLOUDFLARE_API_TOKEN not set')
-  process.exit(1)
+function quote(val: string): string {
+  return `'${val.replace(/'/g, "''")}'`
 }
 
-const sql = `INSERT OR REPLACE INTO flowers
-  (id, common_name, scientific_name, region, bloom_season, color,
-   habitat, conservation_status, short_description, description,
-   image_url, image_alt)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+const COLUMNS = [
+  'id', 'common_name', 'scientific_name', 'region', 'bloom_season',
+  'color', 'habitat', 'conservation_status', 'short_description',
+  'description', 'image_url', 'image_alt',
+]
 
-for (const f of flowers) {
-  const params = [
+function insertSql(f: FlowerSeed): string {
+  const vals = [
     f.id, f.common_name, f.scientific_name, f.region, f.bloom_season,
     f.color, f.habitat, f.conservation_status, f.short_description,
     f.description, f.image_url, f.image_alt,
-  ]
-  const res = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/d1/database/${DB_ID}/query`,
-    {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sql, params }),
-    },
-  )
-  if (!res.ok) {
-    const err = await res.text()
-    console.error(`Failed to insert ${f.id}: ${err}`)
-    process.exit(1)
-  }
-  console.log(`✓ ${f.common_name}`)
+  ].map(quote)
+  return `INSERT OR REPLACE INTO flowers (${COLUMNS.join(', ')}) VALUES (${vals.join(', ')});`
 }
-console.log('Local seed complete.')
+
+const sql = flowers.map(insertSql).join('\n')
+
+const tmpFile = join(tmpdir(), `ozbloom-seed-${Date.now()}.sql`)
+writeFileSync(tmpFile, sql, 'utf-8')
+
+try {
+  console.log(`Seeding ${flowers.length} flowers into local D1...`)
+  for (const f of flowers) {
+    console.log(`  ${f.common_name}`)
+  }
+  execSync(`wrangler d1 execute ozbloom-db --local --file "${tmpFile}"`, { stdio: 'inherit' })
+  console.log('✓ Local seed complete.')
+} finally {
+  unlinkSync(tmpFile)
+}

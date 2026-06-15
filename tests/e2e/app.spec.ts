@@ -131,7 +131,7 @@ test.describe('OzBloom app', () => {
     expect(res.ok()).toBe(true)
 
     const body = await res.json() as { flowers: unknown[] }
-    // Local D1 has 8 flowers from the original seed; remote D1 has 30
+    // Local D1 has 8 flowers (seeded via wrangler CLI); remote D1 has 30
     expect(body.flowers).toHaveLength(8)
 
     const first = body.flowers[0] as Record<string, string>
