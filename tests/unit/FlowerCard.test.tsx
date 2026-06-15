@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Flower } from '../../src/types/flower'
 import { FlowerCard } from '../../src/components/FlowerCard'
@@ -115,7 +115,20 @@ describe('FlowerCard', () => {
     const shareBtn = screen.getByRole('button', { name: /share flower/i })
     expect(shareBtn).toBeInTheDocument()
 
-    // Clicking share should not throw (handles both Web Share and clipboard paths)
     await expect(user.click(shareBtn)).resolves.toBeUndefined()
+  })
+
+  it('shows fallback when image fails to load', async () => {
+    render(
+      <FlowerCard flower={flower} isFavorite={false} onToggleFavorite={vi.fn()} />,
+    )
+
+    expect(screen.getByRole('img')).toBeInTheDocument()
+    expect(screen.queryByText(flower.image_alt)).not.toBeInTheDocument()
+
+    fireEvent.error(screen.getByRole('img'))
+
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(screen.getByText(flower.image_alt)).toBeInTheDocument()
   })
 })

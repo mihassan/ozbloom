@@ -92,6 +92,38 @@ describe('useFlowers', () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
   })
 
+  it('handles empty API response gracefully', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => makeBatch([]),
+    }))
+
+    const { result } = renderHook(() => useFlowers())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    expect(result.current.current).toBeNull()
+    expect(result.current.error).toBeNull()
+  })
+
+  it('refetch reloads flowers', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => makeBatch(BATCH_IDS) })
+      .mockResolvedValueOnce({ ok: true, json: async () => makeBatch(['x', 'y', 'z']) })
+
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { result } = renderHook(() => useFlowers())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.current?.id).toBe('a')
+
+    await act(async () => {
+      await result.current.refetch()
+    })
+
+    await waitFor(() => expect(result.current.current?.id).toBe('x'))
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
   it('dedup: second batch has shared flower filtered out', async () => {
     const sharedFlower = mockFlower('shared')
     const secondBatch = [sharedFlower, mockFlower('new1'), mockFlower('new2')]

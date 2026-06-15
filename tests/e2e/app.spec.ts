@@ -4,61 +4,55 @@ test.describe('OzBloom app', () => {
   test('loads and shows a flower card immediately', async ({ page }) => {
     await page.goto('/')
 
-    // Header visible
     await expect(page.getByText('OzBloom')).toBeVisible()
 
-    // Wait for loading to finish (skeleton disappears, card content appears)
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
-    // A flower name heading is present
-    const heading = page.locator('h1')
+    const heading = page.locator('h2').first()
     await expect(heading).not.toBeEmpty()
   })
 
   test('Next button advances to a different card', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
-    const first = await page.locator('h1').innerText()
+    const first = await page.locator('h2').first().innerText()
 
     await page.getByRole('button', { name: 'Next flower' }).click()
 
-    // Wait for transition — heading may briefly be the same then change
-    await page.waitForTimeout(400)
+    // Wait until the heading text changes (fixes waitForTimeout flakiness)
+    await page.waitForFunction(
+      (prev) => document.querySelector('h2')?.textContent !== prev,
+      first,
+      { timeout: 5000 },
+    )
 
-    const second = await page.locator('h1').innerText()
-
-    // With 30 flowers randomised it's overwhelmingly likely these differ;
-    // the test retries on flake via playwright config retries: 1
-    expect(second).not.toBe('')
-    // Both should be non-empty valid names
+    const second = await page.locator('h2').first().innerText()
     expect(first).not.toBe('')
+    expect(second).not.toBe('')
   })
 
   test('card shows all required fields', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
     const card = page.locator('.rounded-card').first()
     await expect(card).toBeVisible()
 
-    // Scientific name (italic)
     await expect(card.locator('p.italic')).toBeVisible()
 
-    // Metadata labels (exact match to avoid colliding with description text)
     await expect(card.getByText('Region', { exact: true })).toBeVisible()
     await expect(card.getByText('Blooms', { exact: true })).toBeVisible()
     await expect(card.getByText('Colour', { exact: true })).toBeVisible()
     await expect(card.getByText('Habitat', { exact: true })).toBeVisible()
 
-    // Conservation badge
     const badge = card.locator('span.rounded-full')
     await expect(badge).toBeVisible()
   })
 
   test('flower image has alt text', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
     const img = page.locator('img').first()
     await expect(img).toBeVisible()
@@ -69,61 +63,49 @@ test.describe('OzBloom app', () => {
 
   test('heart button toggles favorite state on card', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
-    // Heart button shows "Save flower" initially
     const heartBtn = page.getByRole('button', { name: /save flower/i })
     await expect(heartBtn).toBeVisible()
 
-    // Click to save
     await heartBtn.click()
-
-    // Now shows "Remove from saved"
     await expect(page.getByRole('button', { name: /remove from saved/i })).toBeVisible()
 
-    // Click again to remove
     await page.getByRole('button', { name: /remove from saved/i }).click()
     await expect(page.getByRole('button', { name: /save flower/i })).toBeVisible()
   })
 
   test('saved view shows favorited flowers', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
-    // Save the current flower
-    const flowerName = await page.locator('h1').innerText()
+    const flowerName = await page.locator('h2').first().innerText()
     await page.getByRole('button', { name: /save flower/i }).click()
 
-    // Open saved view via the header heart button
     await page.getByRole('button', { name: /saved flowers/i }).click()
 
-    // Should see the Saved heading and the saved flower
     await expect(page.getByText('Saved')).toBeVisible()
     await expect(page.getByRole('heading', { name: flowerName })).toBeVisible()
   })
 
   test('saved view shows empty state when no flowers', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
-    // Open saved view
     const savedBtn = page.getByRole('button', { name: /saved flowers/i })
     await savedBtn.click()
 
-    // Empty state message
     await expect(page.getByText(/no saved flowers/i)).toBeVisible()
   })
 
   test('can return to discover from saved view', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
 
-    // Open saved view then go back
     await page.getByRole('button', { name: /saved flowers/i }).click()
     await page.getByRole('button', { name: /back to discover/i }).last().click()
 
-    // Should see the flower card again
-    await expect(page.locator('h1')).toBeVisible()
+    await expect(page.locator('h2')).toBeVisible()
   })
 
   test('API returns flowers from local D1', async ({ request }) => {
@@ -131,7 +113,6 @@ test.describe('OzBloom app', () => {
     expect(res.ok()).toBe(true)
 
     const body = await res.json() as { flowers: unknown[] }
-    // Local D1 has 8 flowers (seeded via wrangler CLI); remote D1 has 30
     expect(body.flowers).toHaveLength(8)
 
     const first = body.flowers[0] as Record<string, string>
@@ -152,6 +133,25 @@ test.describe('OzBloom app', () => {
     expect(res.status()).toBe(404)
   })
 
+  test('API includes CORS headers on error responses', async ({ request }) => {
+    const res = await request.get('http://localhost:8787/api/nope')
+    const origin = res.headers()['access-control-allow-origin']
+    expect(origin).toBeTruthy()
+    expect(origin).toMatch(/ozbloom\.mihassan\.com/)
+  })
+
+  test('API rejects invalid limit parameter with 400', async ({ request }) => {
+    const res = await request.get('http://localhost:8787/api/flowers/random?limit=-1')
+    expect(res.status()).toBe(400)
+    const body = await res.json() as { error: string }
+    expect(body.error).toMatch(/invalid limit/i)
+  })
+
+  test('API rejects garbage limit parameter', async ({ request }) => {
+    const res = await request.get('http://localhost:8787/api/flowers/random?limit=abc')
+    expect(res.status()).toBe(400)
+  })
+
   test('no console errors on load', async ({ page }) => {
     const errors: string[] = []
     page.on('console', (msg) => {
@@ -159,7 +159,7 @@ test.describe('OzBloom app', () => {
     })
 
     await page.goto('/')
-    await expect(page.locator('h1')).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('h2')).toBeVisible({ timeout: 10000 })
     await page.waitForTimeout(500)
 
     expect(errors).toHaveLength(0)
