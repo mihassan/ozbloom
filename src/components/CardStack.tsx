@@ -51,7 +51,7 @@ export function CardStack({ flower, onAdvance, isFavorite, onToggleFavorite }: P
 
   return (
     <div className="flex flex-col items-center gap-5 w-full h-full">
-      <div className="relative w-full flex-1 touch-action-none" style={{ minHeight: 0 }}>
+      <div className="relative w-full flex-1" style={{ minHeight: 0 }}>
         <motion.div
           key={flower.id}
           className="absolute inset-0 cursor-grab active:cursor-grabbing"

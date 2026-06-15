@@ -72,6 +72,9 @@ export default function App() {
                   onToggleFavorite={() => toggle(current)}
                 />
               )}
+              {!loading && !error && !current && (
+                <ErrorState message="No more flowers to show" onRetry={() => window.location.reload()} />
+              )}
             </>
           )}
         </main>

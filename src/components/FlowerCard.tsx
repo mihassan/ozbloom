@@ -49,15 +49,20 @@ function IconButton({ onClick, ariaLabel, children }: { onClick: () => void; ari
 async function shareFlower(flower: Flower) {
   const text = `${flower.common_name} (${flower.scientific_name}) — ${flower.short_description}`
   const url = window.location.origin
-  if (navigator.share) {
-    await navigator.share({ title: flower.common_name, text, url })
-  } else {
-    await navigator.clipboard.writeText(`${text}\n${url}`)
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: flower.common_name, text, url })
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(`${text}\n${url}`)
+    }
+  } catch {
+    // user cancelled share or clipboard unavailable
   }
 }
 
 export function FlowerCard({ flower, isFavorite, onToggleFavorite }: Props) {
   const [copied, setCopied] = useState(false)
+  const [imageFailed, setImageFailed] = useState(false)
 
   const handleShare = async () => {
     await shareFlower(flower)
@@ -70,18 +75,16 @@ export function FlowerCard({ flower, isFavorite, onToggleFavorite }: Props) {
   return (
     <div className="w-full h-full flex flex-col bg-sand rounded-card shadow-card-lg overflow-hidden">
       <div className="relative flex-shrink-0" style={{ height: '62%' }}>
-        <img
-          src={flower.image_url}
-          alt={flower.image_alt}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none'
-            e.currentTarget.nextElementSibling?.removeAttribute('hidden')
-          }}
-        />
-        <div hidden className="absolute inset-0">
+        {imageFailed ? (
           <ImageFallback alt={flower.image_alt} />
-        </div>
+        ) : (
+          <img
+            src={flower.image_url}
+            alt={flower.image_alt}
+            className="w-full h-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        )}
 
         <div className="absolute top-3 right-3 flex gap-2">
           <IconButton onClick={onToggleFavorite} ariaLabel={isFavorite ? 'Remove from saved' : 'Save flower'}>

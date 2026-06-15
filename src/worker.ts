@@ -9,11 +9,12 @@ const CORS_HEADERS = {
 }
 
 function json(data: unknown, status = 200): Response {
+  const cacheControl = status < 400 ? 'public, max-age=60' : 'no-store'
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=60',
+      'Cache-Control': cacheControl,
       ...CORS_HEADERS,
     },
   })
@@ -31,18 +32,26 @@ export default {
       const limitParam = url.searchParams.get('limit')
       const limit = Math.min(Math.max(parseInt(limitParam ?? '8', 10) || 8, 1), 50)
 
-      const { results } = await env.DB.prepare(
-        `SELECT id, common_name, scientific_name, region, bloom_season,
-                color, habitat, conservation_status, short_description,
-                description, image_url, image_alt
-         FROM flowers
-         ORDER BY RANDOM()
-         LIMIT ?`,
-      )
-        .bind(limit)
-        .all()
+      if (!env.DB) return json({ error: 'Database unavailable' }, 503)
 
-      return json({ flowers: results })
+      try {
+        const result = await env.DB.prepare(
+          `SELECT id, common_name, scientific_name, region, bloom_season,
+                  color, habitat, conservation_status, short_description,
+                  description, image_url, image_alt
+           FROM flowers
+           ORDER BY RANDOM()
+           LIMIT ?`,
+        )
+          .bind(limit)
+          .all()
+
+        if (!result.success) return json({ error: 'Database query failed' }, 500)
+        return json({ flowers: result.results })
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Internal server error'
+        return json({ error: message }, 500)
+      }
     }
 
     if (url.pathname === '/api/health') {
