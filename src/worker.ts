@@ -16,16 +16,17 @@ function corsHeaders(origin: string | null): Record<string, string> {
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
   }
 }
 
-function json(data: unknown, status = 200, cors?: Record<string, string>): Response {
-  const cacheControl = status < 400 ? 'public, max-age=60' : 'no-store'
+function json(data: unknown, status = 200, cors?: Record<string, string>, cacheControl?: string): Response {
+  const cc = cacheControl ?? (status < 400 ? 'public, max-age=60' : 'no-store')
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': cacheControl,
+      'Cache-Control': cc,
       ...cors,
     },
   })
