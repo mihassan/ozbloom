@@ -6,6 +6,13 @@
 
 A mobile-first digital field guide for discovering Australian native flowers. Swipe through beautifully illustrated cards, save your favourites, and share discoveries.
 
+## Current Scope
+
+- Mobile-first card-stack browsing for 30 Australian native flowers.
+- Cloudflare Worker API backed by D1 flower data and R2 images.
+- Local favorites, saved view, share support, and PWA behavior.
+- Unit and E2E coverage for the core browsing experience.
+
 ## Features
 
 - **Swipeable card stack** — browse randomly presented Australian native flowers
@@ -16,7 +23,7 @@ A mobile-first digital field guide for discovering Australian native flowers. Sw
 - **Watercolor illustrations** — AI-generated botanical art for each species
 - **Responsive** — mobile-first design with reduced-motion support
 
-## Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -50,9 +57,11 @@ src/
 └── worker.ts       # Cloudflare Worker entry
 ```
 
-## Tests
+## Verification
 
 ```sh
+npm run lint
+npm run build
 npm test            # Vitest unit tests (35 tests)
 npx playwright test # Playwright e2e tests
 ```
@@ -63,6 +72,12 @@ npx playwright test # Playwright e2e tests
 npm run build
 npm run worker:deploy  # dry-run only — real deploys via CI on main
 ```
+
+## Documentation
+
+- [Product Requirements](docs/PRD.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [UI/UX Brief](docs/ui-ux-brief.md)
 
 ## License
 
